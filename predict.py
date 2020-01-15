@@ -45,8 +45,8 @@ if __name__ == '__main__':
     inputFile, inputModel, actualFile = assign_values_from_arguments()
     model = load_model(inputModel)
     # We don't care for which optimizer to use as we use a pre-trained model
-    model.compile(optimizer=optimizers.Adam(0.01), loss=losses.mape,
-                  metrics=[metrics.mae, metrics.mape])
+    model.compile(optimizer=optimizers.Adam(0.01), loss=losses.mse,
+                  metrics=[metrics.mae])
 
     data = pandas.read_csv(inputFile, header=None)
     timestamps = data.loc[:, 0]
@@ -55,13 +55,18 @@ if __name__ == '__main__':
     labels = pandas.read_csv(actualFile, header=None)
     labels = labels.drop(labels.columns[0], axis=1)
 
-    model.evaluate(data, labels, batch_size=32)
+    model_metrics = model.evaluate(data, labels, batch_size=32)
 
     result = model.predict(data, batch_size=32)
 
-    beginning_of_file = 'MAE: ' + str(mean_absolute_error(labels, result)) + ' MAPE: '\
-                        + str(mean_absolute_percentage_error(labels, result)) +\
-                        ' MSE: ' + str(mean_squared_error(labels, result))
+    print(model_metrics[1], " ", str(mean_absolute_error(labels, result)))
+
+    # beginning_of_file = 'MAE: ' + str(mean_absolute_error(labels, result)) + ' MAPE: '\
+    #                     + str(mean_absolute_percentage_error(labels, result)) +\
+    #                     ' MSE: ' + str(mean_squared_error(labels, result))
+    beginning_of_file = 'MAE: ' + str(model_metrics[1]) + ' MAPE: '\
+                        + str(mean_absolute_percentage_error(labels, result)) + "%" +\
+                        ' MSE: ' + str(model_metrics[0])
     result = numpy.c_[timestamps.to_numpy(), result]
     numpy.savetxt("predicted.csv", result, delimiter="\t", fmt='%s', header=beginning_of_file,
                   comments='')

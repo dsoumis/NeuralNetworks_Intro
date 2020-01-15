@@ -39,6 +39,8 @@ if __name__ == '__main__':
 
     data = pandas.read_csv(inputFile, header=None)
     timestamps = data.loc[:, 0]
+    for index, each in enumerate(timestamps):
+        timestamps[index] = each.replace(" ", ",")
     data = data.drop(data.columns[0], axis=1)
 
     # model.summary()
